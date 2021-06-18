@@ -21,38 +21,37 @@ class FaceDetector:
         self.tm_threshold = tm_threshold
 
     # ToDo: Track a face in a new image using template matching.
+
     def track_face(self, image):
         if self.reference is None:
-            result = self.detect_face(image)
-
-            return  result
+            self.reference = self.detect_face(image)
+            print('action')
+            return  self.reference
 
         else:
             x, y, w, h = self.reference["rect"]
-            print(x, y, w, h)
             newregion = [x - self.tm_window_size,
                          y - self.tm_window_size,
                          w + self.tm_window_size * 2,
                          h + self.tm_window_size * 2]
             x_new, y_new, _, _ = newregion
             img_new = self.crop_face(image, newregion)
-            print(self.reference["aligned"].shape)
             t = cv2.resize(self.reference["aligned"], dsize=(w, h))
 
-            tmp = cv2.matchTemplate(img_new, self.reference["aligned"], method=cv2.TM_CCOEFF_NORMED)
+            tmp = cv2.matchTemplate(img_new, t, method=cv2.TM_CCOEFF_NORMED)
 
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(tmp)
-            print(max_val)
             if max_val < self.tm_threshold:
-                print("Can not find restart detect face")
+                print("track Failed ,Restart detect face")
                 return self.detect_face(image)
 
             else:
-                # face_rect = [x_new + max_loc[0]-self.tm_window_size*2, y_new + max_loc[1]-self.tm_window_size*2,
-                #              w+self.tm_window_size, h+self.tm_window_size]
-                face_rect = [x_new + max_loc[0] - self.tm_window_size , y_new + max_loc[1] - self.tm_window_size ,
-                             w , h ]
+                face_rect = [x_new + max_loc[0], y_new + max_loc[1],
+                             w, h]
+                # face_rect = [x_new + max_loc[0]  , y_new + max_loc[1] ,
+                #              w , h ]
                 aligned = self.align_face(image, face_rect)
+
                 # cv2.rectangle(image, (a, b), (a + w, b + h), (0, 0, 225), 2)
                 # # cv2.rectangle(image, min_loc, (x, y), (0, 0, 225), 2)
                 # cv2.imshow("aa", image)

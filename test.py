@@ -17,7 +17,7 @@ if __name__ == '__main__':
     # The video capture input. In case of "None" the default video capture (webcam) is used. Use a filename(s) to read
     # video data from image file (see VideoCapture documentation)
     # parser.add_argument('--video', type=str, default="/eso/dfs/Home/thko7498/FAU/CV Projekt/exercise/solution/test_data/Alan_Ball/%04d.jpg")
-    parser.add_argument('--video', type=str, default=r'C:\Users\z00461wk\Desktop\CVex\cvprojectex4\datasets\training_data\Manuel_Pellegrini\%04d.jpg')
+    parser.add_argument('--video', type=str, default=r'C:\Users\z00461wk\Desktop\CVex\cvprojectex4\datasets\test_data\Marina_Silva\%04d.jpg')
     args = parser.parse_args()
 
     tmp=os.path.dirname( args.video)

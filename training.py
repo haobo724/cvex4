@@ -22,7 +22,7 @@ def climain(name,mode='ident'):
     # video data from image file (see VideoCapture documentation)
     #parser.add_argument('--video', type=str, default="/eso/dfs/Home/thko7498/FAU/CV Projekt/exercise/solution/training_data/Nancy_Sinatra/%04d.jpg")
     parser.add_argument('--video', type=str,
-                        default=r'./datasets/test_data\{}\%04d.jpg'.format(name))
+                        default=r'./datasets/training_data\{}\%04d.jpg'.format(name))
     # Identity label (only required for face identification)
     parser.add_argument('--label', type=str, default=f"{name}")
     args = parser.parse_args()
@@ -86,19 +86,20 @@ def climain(name,mode='ident'):
                 state = "{} samples".format(num_samples)
 
                 # Display annotations for face tracking and training.
-        #     face_rect = face["rect"]
-        #     cv2.rectangle(frame,
-        #                   (face_rect[0], face_rect[1]),
-        #                   (face_rect[0] + face_rect[2] - 1, face_rect[1] + face_rect[3] - 1), (0, 255, 0), 2)
-        #     cv2.putText(frame,
-        #                 state,
-        #                 (face_rect[0] + face_rect[2] + 10, face_rect[1] + face_rect[3] + 10),
-        #                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        #
-        # cv2.imshow("Camera", frame)
+            face_rect = face["rect"]
+            cv2.rectangle(frame,
+                          (face_rect[0], face_rect[1]),
+                          (face_rect[0] + face_rect[2] - 1, face_rect[1] + face_rect[3] - 1), (0, 255, 0), 2)
+            cv2.putText(frame,
+                        state,
+                        (face_rect[0] + face_rect[2] + 10, face_rect[1] + face_rect[3] + 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+
+        cv2.imshow("Camera", frame)
 
     # Save trained models for face identification and clustering.
     if args.mode == "ident":
+        # recognizer.opt()
         print("Save trained face recognition model")
         recognizer.save()
 
@@ -114,5 +115,5 @@ if __name__ == '__main__':
         for dir in dirs:
             dirlist.append(dir)
     for name in dirlist:
-        # if name == 'Manuel_Pellegrini':
+        # if name == 'Manuel_Pellegrini'or  name == 'Alan_Ball':
         climain(name,mode='ident')
