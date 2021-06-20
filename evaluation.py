@@ -70,6 +70,7 @@ class OpenSetEvaluation:
 
         res = []
         test_labels_known = self.test_labels[self.test_labels==UNKNOWN_LABEL]
+        #每个th都对应一个acc，th其实就是rate
         for similarity_known_threshold in self.similarity_thresholds:
             n_true = 0
             for prediction_label, test_label, similarity_known in zip(prediction_labels, test_labels_known, self.similarity_known):

@@ -215,4 +215,5 @@ class FaceClustering:
             label.append(self.cluster_membership[m.trainIdx])
         idx = np.where(distance == np.min(distance))[0]
 
-        return self.cluster_center[idx], np.min(distance)
+        # return self.cluster_center[idx], np.min(distance)
+        return idx, np.min(distance)
