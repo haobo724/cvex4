@@ -43,7 +43,7 @@ def climain(name,mode='ident'):
     # Prepare face detection, identification, and clustering.
     detector = FaceDetector()
     recognizer = FaceRecognizer()
-    clustering = FaceClustering()
+    clustering = FaceClustering(num_clusters=5)
 
     # The video capturing loop.
     state = ""
@@ -116,4 +116,4 @@ if __name__ == '__main__':
             dirlist.append(dir)
     for name in dirlist:
         # if name == 'Manuel_Pellegrini'or  name == 'Alan_Ball':
-        climain(name,mode='ident')
+        climain(name,mode='cluster')

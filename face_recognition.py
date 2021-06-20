@@ -2,10 +2,7 @@ import cv2
 import numpy as np
 import pickle
 import os
-import random
-from scipy import spatial
 from collections import Counter
-from sklearn.preprocessing import normalize
 
 from sklearn.cluster import MiniBatchKMeans
 
@@ -73,6 +70,7 @@ class FaceRecognizer:
     # def update(self, face, label):
     #     if label in   self.labels:
     #         pass
+
     #     else:
     #         self.labels.append(label)
     #     self.tmp=np.concatenate((self.tmp, self.facenet.predict(face).reshape((1,-1))),axis=0)
@@ -207,13 +205,13 @@ class FaceClustering:
     def predict(self, face):
         bf = cv2.BFMatcher()
         matches = bf.knnMatch(self.facenet.predict(face).reshape((1, -1)).astype(np.float32),
-                              self.embeddings.astype(np.float32), k=self.num_clusters)
+                              self.cluster_center.astype(np.float32), k=self.num_clusters)
         distance = []
         label = []
 
         for idx, m in enumerate(matches[0]):
             distance.append(m.distance)
-            print(m.trainIdx)
+            # print(m.trainIdx)
             label.append(self.cluster_membership[m.trainIdx])
         idx = np.where(distance == np.min(distance))[0]
 
