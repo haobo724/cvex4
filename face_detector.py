@@ -43,6 +43,7 @@ class FaceDetector:
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(tmp)
             if max_val < self.tm_threshold:
                 print("track Failed ,Restart detect face")
+                self.reference=self.detect_face(image)
                 return self.detect_face(image)
 
             else:

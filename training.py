@@ -105,7 +105,7 @@ def climain(name,mode='ident'):
 
     if args.mode == "cluster":
         print("Save trained face clustering")
-        clustering.fit()
+        # clustering.fit()
         clustering.save()
 
 if __name__ == '__main__':

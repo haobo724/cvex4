@@ -17,12 +17,11 @@ class FaceNet:
     # Predict embedding from a given face image.
     def predict(self, face):
         # Normalize face image using mean subtraction.
-        face = face - (131.0912, 103.8827, 91.4953)
+        face = face - (91.4953, 103.8827, 131.0912)
         # reshaped = np.moveaxis(face, 2, 0)
         #
-        face=np.transpose(face,(2,0,1))
-        reshaped=np.expand_dims(face,axis=0)
-        print(reshaped.shape)
+        face = np.transpose(face, (2, 0, 1))
+        reshaped = np.expand_dims(face, axis=0)
         # Forward pass through deep neural network. The input size should be 224 x 224.
         # reshaped = np.reshape(reshaped, (1, 3, 224, 224))
         self.facenet.setInput(reshaped)
@@ -44,7 +43,7 @@ class FaceRecognizer:
         self.max_distance = max_distance
         self.min_prob = min_prob
         self.facenet = FaceNet()
-        self.loaded=False
+        self.loaded = False
         # The underlying gallery: class labels and embeddings.
         self.labels = []
         self.embeddings = np.empty((0, self.facenet.get_embedding_dimensionality()))
@@ -61,7 +60,7 @@ class FaceRecognizer:
 
     # Load trained model from a pickle file.
     def load(self):
-        self.loaded=True
+        self.loaded = True
         print("loaded")
         with open("recognition_gallery.pkl", 'rb') as f:
             (self.labels, self.embeddings) = pickle.load(f)
@@ -86,10 +85,9 @@ class FaceRecognizer:
 
     def opt(self):
         if self.loaded:
-            self.embeddings = np.concatenate((self.embeddings,self.tmp),axis=0)
+            self.embeddings = np.concatenate((self.embeddings, self.tmp), axis=0)
         else:
-            self.embeddings=self.tmp
-
+            self.embeddings = self.tmp
 
     # ToDo return 3 value: label ,prob ,distance
 
@@ -99,8 +97,9 @@ class FaceRecognizer:
         # temp = np.zeros((1, self.facenet.get_embedding_dimensionality() ))
         # temp[0] = self.facenet.predict(cv2.cvtColor(face, cv2.COLOR_BGR2RGB))
 
-        input=self.facenet.predict(face).reshape((1,-1)).astype(np.float32)
-        input=np.repeat(input,len(self.embeddings),axis=0)
+        input = self.facenet.predict(face).reshape((1, -1)).astype(np.float32)
+        # input=np.repeat(input,len(self.embeddings),axis=0)
+
         # distance=np.linalg.norm((self.embeddings-input),axis=1)
         # idx=np.argsort(distance)[:21]
         # label=[]
@@ -122,26 +121,26 @@ class FaceRecognizer:
         # if self.max_distance <= dist_to_prediction or self.min_prob > prob:
         #     return "unknown", prob, dist_to_prediction
         # return predicted_label, prob, dist_to_prediction
-        matches = bf.knnMatch(input.astype(np.float32),self.embeddings.astype(np.float32),k=self.k)
+        matches = bf.knnMatch(input.astype(np.float32), self.embeddings.astype(np.float32), k=self.k)
 
-        label=[]
-        labeldict={}
-        distancedict={}
+        label = []
+        labeldict = {}
+        distancedict = {}
         for idx, m in enumerate(matches[0]):
             if self.labels[m.trainIdx] in label:
-                labeldict[self.labels[m.trainIdx]]=labeldict[self.labels[m.trainIdx]]+1
-                if m.distance < distancedict[self.labels[m.trainIdx]+'dis']:
-                    distancedict[self.labels[m.trainIdx]+'dis']=m.distance
+                labeldict[self.labels[m.trainIdx]] = labeldict[self.labels[m.trainIdx]] + 1
+                if m.distance < distancedict[self.labels[m.trainIdx] + 'dis']:
+                    distancedict[self.labels[m.trainIdx] + 'dis'] = m.distance
             else:
-                labeldict.setdefault(self.labels[m.trainIdx],1)
-                distancedict.setdefault(self.labels[m.trainIdx]+'dis',m.distance)
+                labeldict.setdefault(self.labels[m.trainIdx], 1)
+                distancedict.setdefault(self.labels[m.trainIdx] + 'dis', m.distance)
             label.append(self.labels[m.trainIdx])
-            print(m.trainIdx)
-            print(m.distance)
-            print(self.labels[m.trainIdx])
-            print('-' * 20)
-        print('*'*10)
-        labeldict=sorted(labeldict.items(), key=lambda kv: (kv[1], kv[0]),reverse=True)
+            # print(m.trainIdx)
+            # print(m.distance)
+            # print(self.labels[m.trainIdx])
+            # print('-' * 20)
+        # print('*'*10)
+        labeldict = sorted(labeldict.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
         prob = labeldict[0][1] / self.k
         tmp = labeldict[0][0] + 'dis'
 
@@ -154,13 +153,12 @@ class FaceRecognizer:
         return predicted_label, prob, dist_to_prediction
 
 
-
 # The FaceClustering class enables unsupervised clustering of face images according to their identity and
 # re-identification.
 class FaceClustering:
 
     # Prepare FaceClustering; specify all parameters of clustering algorithm.
-    def __init__(self,num_clusters=2, max_iter=25):
+    def __init__(self, num_clusters=5, max_iter=25):
         # ToDo: Prepare FaceNet.
         self.facenet = FaceNet()
         # The underlying gallery: embeddings without class labels.
@@ -178,7 +176,10 @@ class FaceClustering:
 
         # Load face clustering from pickle file if available.
         if os.path.exists("clustering_gallery.pkl"):
+            print('loaded gallery')
             self.load()
+            print('initialize K-means')
+            self.fit()
 
     # Save the trained model as a pickle file.
     def save(self):
@@ -196,24 +197,70 @@ class FaceClustering:
 
     # ToDo
     def fit(self):
+        # dummy = MiniBatchKMeans(n_clusters=self.num_clusters, batch_size=3000, random_state=9).fit(self.embeddings)
+        # self.cluster_center = dummy.cluster_centers_
+        # self.cluster_membership = dummy.labels_
+        converge = False
+        iter = 0
 
-        dummy = MiniBatchKMeans(n_clusters=self.num_clusters, batch_size=3000, random_state=9).fit(self.embeddings)
-        self.cluster_center = dummy.cluster_centers_
-        self.cluster_membership = dummy.labels_
+        # initial seed points
+        init_idx = np.random.randint(0, len(self.embeddings), self.num_clusters)
+        center = self.embeddings[init_idx, :]
+        # start loop
+        '''
+        -------------------axis1
+        |
+        |
+        |
+        axis 0
+        
+        '''
+        while (not converge) and (iter < self.max_iter):
+            # calculate cluster_membership
+            cluster_membership = np.empty_like(self.embeddings)
+            for i in range(len(self.embeddings)):
+                repeat_embedding = np.repeat([self.embeddings[i]],
+                                             repeats=self.num_clusters,
+                                             axis=0)
+                dist_to_centers = np.linalg.norm(repeat_embedding - center, axis=1)  # num_center
+                center_idx = np.argmin(dist_to_centers)
+                cluster_membership[i] = center[center_idx]
+            self.cluster_membership = cluster_membership
+
+            # update cluster_center
+            new_center = np.empty_like(center)
+            for j in range(len(center)):
+                idx_same_center = cluster_membership == center[j]
+                same_center = self.embeddings[idx_same_center].reshape(-1, 128)
+                new_center[j] = np.mean(same_center, axis=0)
+                # print(new_center[j])
+            self.cluster_center = new_center
+
+            # check converge or not
+            iter += 1
+            difference = np.sum(new_center - center)
+            if abs(difference) < 1e5:
+                converge = True
+                print('k-means done')
+            center = new_center
+        if not converge:
+            raise ValueError('k-means failed')
 
     # ToDo
     def predict(self, face):
         bf = cv2.BFMatcher()
         matches = bf.knnMatch(self.facenet.predict(face).reshape((1, -1)).astype(np.float32),
-                              self.cluster_center.astype(np.float32), k=self.num_clusters)
+                              self.cluster_center.astype(np.float32), k=1)
         distance = []
         label = []
-
+        # print(len(self.cluster_center))
+        # print(self.cluster_center)
         for idx, m in enumerate(matches[0]):
             distance.append(m.distance)
+            label = m.trainIdx
             # print(m.trainIdx)
-            label.append(self.cluster_membership[m.trainIdx])
-        idx = np.where(distance == np.min(distance))[0]
+            # label.append(self.cluster_membership[m.trainIdx])
+        # idx = np.where(distance == np.min(distance))[0]
 
         # return self.cluster_center[idx], np.min(distance)
-        return idx, np.min(distance)
+        return label, np.min(distance)
